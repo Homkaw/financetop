@@ -22,12 +22,13 @@ jobs:
       run: |
         python -m ensurepip --upgrade
         python -m pip install --upgrade pip setuptools wheel
-        pip install buildozer cython
+        pip install buildozer
+        pip install "python-for-android[full]"
 
     - name: ⚙️ Установка зависимостей system (Ubuntu)
       run: |
         sudo apt update
-        sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev libgles2-mesa-dev 
+        sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev libgles2-mesa-dev
         sudo apt install -y libffi-dev libssl-dev
 
     - name: 📥 Клонирование python-for-android
@@ -35,13 +36,7 @@ jobs:
         mkdir -p .buildozer/android/platform
         git clone https://github.com/kivy/python-for-android.git .buildozer/android/platform/python-for-android
 
-    - name: 📦 Скачивание SDK/NDK и настройка Buildozer
-      run: |
-        buildozer android clean
-        buildozer android debug
-
-
-    - name: 📦 Скачивание SDK/NDK и настройка Buildozer
+    - name: 📦 Сборка APK
       run: |
         buildozer android clean
         buildozer android debug
