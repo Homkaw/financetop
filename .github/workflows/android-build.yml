@@ -18,7 +18,8 @@ jobs:
         sudo apt update
         sudo apt install -y python3-pip git openjdk-11-jdk unzip zip wget
         python3 -m pip install --upgrade pip
-        pip install buildozer
+        pip install buildozer cython
+
 
     - name: Install Android SDK Command-line tools
       run: |
