@@ -29,10 +29,16 @@ jobs:
             python3-setuptools \
             python3-venv \
 
-      - name: 🧰 Установка зависимостей Python (включая distutils)
+      - name: 🔧 Устанавливаем Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 🧰 Установка зависимостей Python
         run: |
           sudo apt update
-          sudo apt install -y python3-distutils
+          sudo apt install -y python3.12-venv python3.12-distutils
+
 
 
       - name: 🐍 Настраиваем виртуальное окружение и Buildozer
