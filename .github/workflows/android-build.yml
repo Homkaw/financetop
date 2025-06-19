@@ -47,6 +47,22 @@ jobs:
       run: |
         buildozer android debug
 
+    - name: Accept Android SDK licenses and install packages
+      run: |
+        export ANDROID_SDK_ROOT=$HOME/Android/Sdk
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        cd $ANDROID_SDK_ROOT/cmdline-tools
+        curl -o tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip tools.zip -d latest
+        rm tools.zip
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} \
+          "platform-tools" \
+          "platforms;android-31" \
+          "build-tools;36.0.0" \
+          "ndk;25.1.8937393"
+
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
