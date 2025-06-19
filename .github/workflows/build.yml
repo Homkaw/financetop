@@ -1,63 +1,69 @@
-name: Build Kivy App
+name: Build Kivy Android APK
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_SDK_ROOT: $HOME/android-sdk
+      ANDROID_SDK_ROOT: /opt/android-sdk
 
     steps:
-    - name: 📦 Клонирование репозитория
-      uses: actions/checkout@v4
+      - name: 📥 Клонируем репозиторий
+        uses: actions/checkout@v4
 
-    - name: 🐍 Установка Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: ⚙️ Устанавливаем зависимости
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            build-essential \
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            python3-pip \
+            python3-setuptools \
+            python3-venv \
+            libncurses5
 
-    - name: 📦 Установка зависимостей
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y zip unzip openjdk-17-jdk
-        pip install --upgrade pip
-        pip install buildozer cython
+      - name: 🐍 Настраиваем виртуальное окружение и Buildozer
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install buildozer cython
 
-    - name: Setup Android SDK cmdline-tools
-      run: |
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        cd $ANDROID_SDK_ROOT/cmdline-tools
-        curl -sSLo tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q tools.zip
-        rm tools.zip
-        # Перемещаем содержимое cmdline-tools в latest, чтобы структура была правильной
-        mkdir -p latest
-        mv cmdline-tools/* latest/
-        rmdir cmdline-tools || true
-        echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-        echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+      - name: 📦 Устанавливаем Android SDK cmdline-tools
+        run: |
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          cd $ANDROID_SDK_ROOT/cmdline-tools
+          curl -sSLo tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q tools.zip -d temp
+          rm tools.zip
+          mkdir -p latest
+          mv temp/cmdline-tools/* latest/
+          rm -rf temp
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
-    - name: ✅ Принятие лицензий и установка SDK/NDK
-      run: |
-        sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses <<< "y" || true
-        sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
-          "platform-tools" \
-          "build-tools;36.0.0" \
-          "platforms;android-31" \
-          "ndk;25.1.8937393"
+      - name: ✅ Принимаем лицензии
+        run: |
+          yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
 
-    - name: 🛠 Сборка приложения Buildozer'ом
-      run: |
-        buildozer android debug
+      - name: 📲 Устанавливаем необходимые Android пакеты
+        run: |
+          sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-31" "build-tools;36.0.0" "ndk;25.1.8937393"
 
-    - name: ⬆️ Загрузка APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: debug-apk
-        path: bin/*.apk
+      - name: 🔨 Собираем APK
+        run: |
+          source venv/bin/activate
+          buildozer android debug
+
+      - name: 📤 Загружаем APK в артефакты
+        uses: actions/upload-artifact@v4
+        with:
+          name: financetop.apk
+          path: bin/*.apk
