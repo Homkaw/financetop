@@ -124,10 +124,10 @@ fullscreen = 0
 #android.ndk_api = 21
 
 # (str) Path to the Android SDK root
-android.sdk_path = /home/homa/Android/Sdk
+# android.sdk_path = /home/homa/Android/Sdk
 
 # (str) Path to the Android NDK root
-android.ndk_path = /home/homa/Android/Sdk/ndk/25.1.8937393
+# ndroid.ndk_path = /home/homa/Android/Sdk/ndk/25.1.8937393
 
 
 

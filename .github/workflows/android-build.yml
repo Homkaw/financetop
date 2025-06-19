@@ -36,10 +36,7 @@ jobs:
 
     - name: Set environment variables
       run: |
-        echo "ANDROIDSDK=$HOME/Android/Sdk" >> $GITHUB_ENV
-        echo "ANDROIDNDK=$HOME/Android/Sdk/ndk/21.4.7075529" >> $GITHUB_ENV
-        echo "ANDROIDAPI=31" >> $GITHUB_ENV
-        echo "ANDROIDMINAPI=21" >> $GITHUB_ENV
+        
 
     - name: Build APK
       run: |
