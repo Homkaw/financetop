@@ -22,8 +22,12 @@ jobs:
       run: |
         python -m ensurepip --upgrade
         python -m pip install --upgrade pip setuptools wheel
-        pip install buildozer
+        pip install cython buildozer
         pip install "python-for-android[full]"
+
+    - name: Проверка cython
+      run: cython --version
+
 
     - name: ⚙️ Установка зависимостей system (Ubuntu)
       run: |
