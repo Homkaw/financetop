@@ -32,7 +32,12 @@ jobs:
     - name: Install Android SDK and NDK packages
       run: |
         yes | $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "ndk;21.4.7075529"
+        $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager \
+          "platform-tools" \
+          "platforms;android-31" \
+          "build-tools;36.0.0" \
+          "ndk;21.4.7075529"
+
 
     - name: Set environment variables
       run: |
