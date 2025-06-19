@@ -1,0 +1,592 @@
+ScreenManager:
+    id: screen_manager
+
+    MainScreen:
+        name: "main"
+
+    ModuleScreen:
+        name: "module_screen"
+
+    LessonScreen:
+        name: "lesson_screen"
+
+    TestScreen:
+        name: "test_screen"
+
+    TasksScreen:
+        name: "tasks_screen"
+
+    LoginScreen:
+        name: "login"
+
+    RegisterScreenStep1:
+        name: "register_step1"
+
+    RegisterScreenStep2:
+        name: "register_step2"
+        
+    RegisterScreenStep3:
+        name: "register_step3"
+        
+    EditProfileScreen:
+        name: "edit_profile"
+
+    ReportScreen:
+        name: "report"
+    
+    GuessWordScreen:
+        name: "guess_word"
+
+<MainScreen@MDScreen>:
+    MDBottomNavigation:
+        panel_color: "lightgreen"
+
+        MDBottomNavigationItem:
+            name: "learn"
+            text: "Обучение"
+            icon: "book-open-variant"
+
+            ScrollView:
+                MDBoxLayout:
+                    id: modules_container
+                    orientation: "vertical"
+                    padding: "12dp"
+                    spacing: "12dp"
+                    adaptive_height: True
+                    size_hint_y: None
+
+        MDBottomNavigationItem:
+            name: "tasks"
+            text: "Задания"
+            icon: "clipboard-text"
+
+            BoxLayout:
+                orientation: "vertical"
+
+                MDTopAppBar:
+                    title: "Задания"
+
+                ScrollView:
+                    MDBoxLayout:
+                        id: tasks_container
+                        orientation: "vertical"
+                        padding: "12dp"
+                        spacing: "12dp"
+                        adaptive_height: True
+                        size_hint_y: None
+
+        MDBottomNavigationItem:
+            name: "games"
+            text: "Игры"
+            icon: "gamepad-variant"
+
+            ScrollView:
+                MDGridLayout:
+                    id: games_grid
+                    cols: 2
+                    adaptive_height: True
+                    adaptive_width: False
+                    padding: "12dp"
+                    spacing: "12dp"
+                    size_hint_y: None
+                    width: self.minimum_width
+
+                    MDCard:
+                        orientation: "vertical"
+                        size_hint: 0.45, None  # ✅ адаптивная ширина
+                        height: "180dp"
+                        radius: [12]
+                        on_release: app.start_game("guess_word")
+                        elevation: 6
+
+                        FitImage:
+                            source: "data/img/guess_word_banner.png"
+                            size_hint_y: 0.7
+
+                        MDLabel:
+                            text: "Угадай слово"
+                            halign: "center"
+                            font_style: "Caption"
+
+                    MDCard:
+                        orientation: "vertical"
+                        size_hint: 0.45, None  # ✅ адаптивная ширина
+                        height: "180dp"
+                        radius: [12]
+                        elevation: 6
+
+                        FitImage:
+                            source: "data/img/guess_word_banner.png"
+                            size_hint_y: 0.7
+
+                        MDLabel:
+                            text: "Угадай слово"
+                            halign: "center"
+                            font_style: "Caption"
+
+                    
+
+
+
+        MDBottomNavigationItem:
+            name: "profile"
+            text: "Профиль"
+            icon: "account-circle"
+            on_tab_press: app.show_profile_tab()
+
+            ScrollView:
+                MDBoxLayout:
+                    id: profile_container
+                    orientation: "vertical"
+                    padding: "16dp"
+                    spacing: "20dp"
+                    adaptive_height: True
+                    size_hint_y: None
+
+                    MDCard:
+                        orientation: "horizontal"
+                        padding: "12dp"
+                        radius: [16]
+                        md_bg_color: app.theme_cls.primary_light
+                        size_hint_y: None
+                        height: "100dp"
+
+                        MDIcon:
+                            icon: "account"
+                            size_hint: None, None
+                            size: "64dp", "64dp"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+
+                        MDLabel:
+                            id: profile_name
+                            text: "Имя Фамилия"
+                            font_style: "H6"
+                            theme_text_color: "Primary"
+                            halign: "left"
+                            valign: "middle"
+
+                    MDSeparator:
+
+                    MDBoxLayout:
+                        spacing: "8dp"
+                        adaptive_height: True
+
+                        MDIcon:
+                            icon: "cash"
+                            theme_text_color: "Secondary"
+
+                        MDLabel:
+                            id: profile_currency
+                            text: "Баланс: 0 кешиков"
+                            halign: "left"
+                            theme_text_color: "Primary"
+
+                    MDBoxLayout:
+                        spacing: "8dp"
+                        adaptive_height: True
+
+                        MDIcon:
+                            icon: "progress-check"
+                            theme_text_color: "Secondary"
+
+                        MDLabel:
+                            id: profile_progress
+                            text: "Прогресс: 0%"
+                            halign: "left"
+                            theme_text_color: "Primary"
+
+                    MDSeparator:
+
+                    MDRaisedButton:
+                        text: "Изменить данные"
+                        pos_hint: {"center_x": 0.5}
+                        on_release: app.edit_profile()
+
+                    MDRaisedButton:
+                        text: "Сформировать отчёт"
+                        pos_hint: {"center_x": 0.5}
+                        on_release: app.root.current = "report"
+
+                    MDRaisedButton:
+                        text: "Выйти из аккаунта"
+                        pos_hint: {"center_x": 0.5}
+                        on_release: app.logout()
+
+            
+
+<ModuleScreen@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "16dp"
+
+        MDTopAppBar:
+            title: "Урок"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+            right_action_items: [["cash", lambda x: None, "Кешики: {}".format(app.profile.get("currency", 0))]]
+            id: topbar
+
+        MDLabel:
+            id: module_title
+            text: ""
+            font_style: "H5"
+            halign: "center"
+            theme_text_color: "Primary"
+
+        MDLabel:
+            id: module_desc
+            text: ""
+            font_style: "Body1"
+            halign: "center"
+            theme_text_color: "Secondary"
+
+        Widget:
+
+        MDRaisedButton:
+            text: "Начать урок"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.start_lesson()
+
+<LessonScreen@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "12dp"
+
+        MDTopAppBar:
+            title: "Урок"
+            left_action_items: [["arrow-left", lambda x: app.go_back_module()]]
+            right_action_items: [["cash", lambda x: None, "Кешики: {}".format(app.profile.get("currency", 0))]]
+            id: topbar
+
+        ScrollView:
+            MDBoxLayout:
+                id: lesson_content
+                orientation: "vertical"
+                adaptive_height: True
+                padding: "12dp"
+                spacing: "12dp"
+
+        MDLabel:
+            id: lesson_title
+            text: ""
+            font_style: "H5"
+            halign: "center"
+            theme_text_color: "Primary"
+            size_hint_y: None
+            height: "32dp"
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "48dp"
+            spacing: "12dp"
+            pos_hint: {"center_x": 0.5}
+
+            MDRaisedButton:
+                text: "Пройти тест"
+                on_release: app.start_test()
+
+            MDRaisedButton:
+                text: "Назад"
+                on_release: app.go_back_module()
+
+<TestScreen@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "12dp"
+
+        MDTopAppBar:
+            title: "Тест"
+            left_action_items: [["arrow-left", lambda x: app.go_back_module()]]
+            right_action_items: [["cash", lambda x: None, "Кешики: {}".format(app.profile.get("currency", 0))]]
+            id: topbar
+
+        ScrollView:
+            MDBoxLayout:
+                id: test_container
+                orientation: "vertical"
+                adaptive_height: True
+                padding: [16, 30, 16, 16]  # <<< ВНИМАНИЕ: здесь 30dp сверху
+                spacing: "16dp"
+
+        MDRaisedButton:
+            text: "Проверить"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.check_test()
+
+<TasksScreen@MDScreen>:
+    name: "tasks_screen"
+
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTopAppBar:
+            title: "Задания и валюта"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+            right_action_items: [["cash", lambda x: None, "Кешики: {}".format(app.profile.get("currency", 0))]]
+            id: topbar
+
+        MDLabel:
+            id: currency_label
+            text: "Баланс: {} монет".format(app.profile.get("currency", 0))
+            halign: "center"
+            font_style: "H6"
+            size_hint_y: None
+            height: "48dp"
+
+        ScrollView:
+            MDBoxLayout:
+                id: tasks_container
+                orientation: "vertical"
+                padding: "12dp"
+                spacing: "12dp"
+                adaptive_height: True
+                size_hint_y: None
+
+
+<LoginScreen@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "24dp"
+        spacing: "16dp"
+
+        MDLabel:
+            text: "Вход"
+            halign: "center"
+            font_style: "H4"
+
+        MDTextField:
+            id: login_username
+            hint_text: "Имя пользователя"
+
+        MDTextField:
+            id: login_password
+            hint_text: "Пароль"
+            password: True
+
+        MDRaisedButton:
+            text: "Войти"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.login(login_username.text, login_password.text)
+
+        MDFlatButton:
+            text: "Нет аккаунта? Зарегистрироваться"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.change_screen("register_step1")
+
+<RegisterScreenStep1@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "24dp"
+        spacing: "16dp"
+
+        MDLabel:
+            text: "Регистрация - шаг 1"
+            halign: "center"
+            font_style: "H5"
+
+        MDTextField:
+            id: reg_username
+            hint_text: "Придумайте логин"
+
+        MDTextField:
+            id: reg_password
+            hint_text: "Придумайте пароль"
+            password: True
+
+        MDTextField:
+            id: reg_password_confirm
+            hint_text: "Повторите пароль"
+            password: True
+
+        MDRaisedButton:
+            text: "Далее"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.register_step1(reg_username.text, reg_password.text, reg_password_confirm.text)
+
+        MDFlatButton:
+            text: "Назад"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.change_screen("login")
+
+<RegisterScreenStep2@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "24dp"
+        spacing: "16dp"
+
+        MDLabel:
+            text: "Регистрация - шаг 2 (ФИО и возраст)"
+            halign: "center"
+            font_style: "H5"
+
+        MDTextField:
+            id: reg_last_name
+            hint_text: "Фамилия"
+
+        MDTextField:
+            id: reg_first_name
+            hint_text: "Имя"
+
+        MDTextField:
+            id: reg_middle_name
+            hint_text: "Отчество"
+
+        MDTextField:
+            id: reg_age
+            hint_text: "Сколько вам лет"
+            input_filter: "int"
+
+        MDRaisedButton:
+            text: "Далее"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.register_step2(reg_last_name.text, reg_first_name.text, reg_middle_name.text, reg_age.text)
+
+        MDFlatButton:
+            text: "Назад"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.change_screen("register_step1")
+
+<RegisterScreenStep3@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "24dp"
+        spacing: "16dp"
+
+        MDLabel:
+            text: "Регистрация - шаг 3 (Школа и класс)"
+            halign: "center"
+            font_style: "H5"
+
+        MDTextField:
+            id: reg_school
+            hint_text: "Школа"
+
+        MDTextField:
+            id: reg_grade
+            hint_text: "Класс (например, 7Б)"
+
+        MDRaisedButton:
+            text: "Завершить"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.register_finish(reg_school.text, reg_grade.text)
+
+        MDFlatButton:
+            text: "Назад"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.change_screen("register_step2")
+
+<EditProfileScreen@MDScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTopAppBar:
+            title: "Редактировать профиль"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+
+        ScrollView:
+            MDBoxLayout:
+                orientation: "vertical"
+                padding: [20, 50, 20, 20]  # <<< отступ сверху 80dp
+                spacing: "16dp"
+                adaptive_height: True
+                size_hint_y: None
+
+                MDTextField:
+                    id: first_name
+                    hint_text: "Имя"
+
+                MDTextField:
+                    id: last_name
+                    hint_text: "Фамилия"
+
+                MDTextField:
+                    id: middle_name
+                    hint_text: "Отчество"
+
+                MDTextField:
+                    id: school
+                    hint_text: "Школа"
+
+                MDTextField:
+                    id: grade
+                    hint_text: "Класс"
+
+                MDTextField:
+                    id: age
+                    hint_text: "Возраст"
+                    input_filter: "int"
+
+                MDRaisedButton:
+                    text: "Сохранить"
+                    pos_hint: {"center_x": 0.5}
+                    on_release: app.save_profile_changes()
+
+<ReportScreen@MDScreen>:
+    name:"report"
+    
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTopAppBar:
+            title: "Формирование отчёта"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+
+        MDBoxLayout:
+            orientation: "vertical"
+            padding: "16dp"
+            spacing: "12dp"
+            
+            MDTextField:
+                id: email_field
+                hint_text: "Введите email"
+                helper_text: "На этот адрес придёт отчёт"
+                helper_text_mode: "on_focus"
+                
+
+            MDRaisedButton:
+                text: "Отправить"
+                pos_hint: {"center_x": 0.1}
+                on_release: app.generate_report()
+
+
+<GuessWordScreen@MDScreen>:
+    name: "guess_word"
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "12dp"
+
+        MDTopAppBar:
+            title: "Угадай слово"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+
+        MDLabel:
+            id: guess_hint
+            text: "Введите слово из 5 букв"
+            halign: "center"
+            font_style: "H6"
+
+        MDTextField:
+            id: guess_input
+            hint_text: "Ваш вариант"
+            max_text_length: 5
+            size_hint_x: 0.8
+            pos_hint: {"center_x": 0.5}
+            multiline: False
+            on_text_validate: app.submit_guess()
+
+        ScrollView:
+            MDBoxLayout:
+                id: guess_output
+                orientation: "vertical"
+                adaptive_height: True
+                spacing: "8dp"
+                padding: "8dp"
+
+        MDRaisedButton:
+            text: "Проверить"
+            pos_hint: {"center_x": 0.5}
+            on_release: app.submit_guess()

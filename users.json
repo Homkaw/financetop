@@ -1,0 +1,25 @@
+{
+    "users": {
+        "Хома": {
+            "password": "123",
+            "last_name": "Стиценко",
+            "first_name": "Арина",
+            "middle_name": "Игоревна",
+            "age": 19,
+            "school": "№71",
+            "grade": "9в",
+            "currency": 0
+        },
+        "Ома": {
+            "password": "123",
+            "last_name": "Стиценко",
+            "first_name": "Арина",
+            "middle_name": "Игоревна",
+            "age": 19,
+            "school": "№71",
+            "grade": "9в",
+            "currency": 0
+        }
+    },
+    "current_user": "Ома"
+}
