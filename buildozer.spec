@@ -124,10 +124,11 @@ android.ndk = 25b
 android.ndk_api = 21
 
 # (str) Path to the Android SDK root
-# android.sdk_path = /home/homa/Android/Sdk
+android.sdk_path = /home/runner/android-sdk
+
 
 # (str) Path to the Android NDK root
-# ndroid.ndk_path = /home/homa/Android/Sdk/ndk/25.1.8937393
+android.ndk_path = /home/runner/android-sdk/ndk/25.1.8937393
 
 
 
