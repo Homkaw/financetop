@@ -35,16 +35,17 @@ jobs:
         cd $ANDROID_SDK_ROOT/cmdline-tools
         curl -sSLo tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
         unzip -q tools.zip
-        mv cmdline-tools latest
+        rm tools.zip
+        # Перемещаем содержимое cmdline-tools в latest, чтобы структура была правильной
+        mkdir -p latest
+        mv cmdline-tools/* latest/
+        rmdir cmdline-tools || true
         echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
 
-
-
     - name: ✅ Принятие лицензий и установка SDK/NDK
       run: |
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
-        sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses <<< "y"
+        sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses <<< "y" || true
         sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
           "platform-tools" \
           "build-tools;36.0.0" \
