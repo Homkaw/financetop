@@ -11,6 +11,8 @@ from kivymd.uix.button import MDIconButton, MDRaisedButton, MDFlatButton
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivy.uix.image import Image
 from kivy.uix.widget import Widget
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.textfield import MDTextField
 from datetime import datetime
 from functools import partial
 import smtplib
@@ -61,15 +63,7 @@ class FinanceApp(MDApp):
         self.title = "Финансовое Обучение"
         self.theme_cls.primary_palette = "Green"
         self.theme_cls.theme_style = "Light"
-        self.progress_file = "data/progress.json"
-        self.test_widgets = []  # сюда будем сохранять виджеты с ответами
-        self.tasks = []
-        self.profile = {"currency": 0, "last_login_date": ""}
-        self.users_file = "data/users.json"
-        self.temp_user_data = {}
-        self.load_users()
-        self.load_words()
-
+        
         self.modules = [
             {"title": "1. Личное финансовое планирование", "desc": "Бюджет и цели", "key": "Планирование"},
             {"title": "2. Депозиты", "desc": "Как копить и сохранять", "key": "Депозиты"},
@@ -81,46 +75,59 @@ class FinanceApp(MDApp):
             {"title": "8. Налоги", "desc": "Платим государству", "key": "Налоги"},
             {"title": "9. Мошенничество", "desc": "Финансовая безопасность", "key": "Мошенничество"},
         ]
+        
+        self.progress_file = "data/progress.json"
+        self.test_widgets = []  # сюда будем сохранять виджеты с ответами
+        self.tasks = []
+        self.profile = {"currency": 0, "last_login_date": ""}
+        self.users_file = "data/users.json"
+        self.temp_user_data = {}
+        self.load_users()
+        self.load_words()
+        self.load_users()  # Загружаем users.json
+        self.current_user = self.users_data.get("current_user")  # Задаём текущего пользователя
+        self.load_progress()  # Загружаем прогресс уже ЗНАЯ текущего пользователя
+
+        
+        
 
         self.load_progress()
         self.current_module = None
         return Builder.load_file("main.kv")
 
-    def load_progress(self):
-        if os.path.exists(self.progress_file):
-            with open(self.progress_file, "r", encoding="utf-8") as f:
-                self.module_progress = json.load(f)
-        else:
-            self.module_progress = {
-                m["key"]: {"progress": 0 if i != 0 else 10, "locked": i != 0}
-                for i, m in enumerate(self.modules)
-            }
-            
-            self.save_progress()
+    
 
-    def save_progress(self):
-        os.makedirs("data", exist_ok=True)
-        with open(self.progress_file, "w", encoding="utf-8") as f:
-            json.dump(self.module_progress, f, ensure_ascii=False, indent=4)
 
     def on_start(self):
         current_user = self.users_data.get("current_user")
+        
         if current_user and current_user in self.users_data["users"]:
+            self.current_user = current_user  # ⬅️ Обязательно установить
+            self.load_progress()  # ⬅️ Загрузить прогресс ДО отображения модулей
             self.change_screen("main")
         else:
             self.change_screen("login")
-        container = self.root.get_screen("main").ids.modules_container
-        container.clear_widgets() 
+            return  # Не пытаться дальше загружать, если не авторизован
+
+        # Загрузка прочих данных
         self.load_tasks()
         self.reset_daily_tasks_if_needed()
         self.populate_tasks_screen()
-        
         self.populate_tasks_tab()
         self.update_currency_in_appbar()
         self.load_words()
 
+        # Подготовка карточек модулей
+        container = self.root.get_screen("main").ids.modules_container
+        container.clear_widgets()
+
         for module in self.modules:
             key = module["key"]
+            # Защита от KeyError:
+            if key not in self.module_progress:
+                print(f"[Внимание] Прогресс по модулю '{key}' не найден.")
+                continue
+
             progress = self.module_progress[key]["progress"]
             locked = self.module_progress[key]["locked"]
 
@@ -157,7 +164,38 @@ class FinanceApp(MDApp):
             box.add_widget(icon)
             card.add_widget(box)
             container.add_widget(card)
-            
+
+           
+    def load_progress(self):
+        username = self.current_user
+        if not username:
+            print("[Ошибка]: текущий пользователь не задан")
+            self.module_progress = {}
+            return
+
+        user = self.users_data["users"].get(username, {})
+        saved_progress = user.get("progress", {})
+
+        self.module_progress = {}
+        for index, module in enumerate(self.modules):  # self.modules — список модулей
+            key = module["key"]
+            default_locked = index != 0
+            self.module_progress[key] = saved_progress.get(key, {
+                "progress": 0 if not default_locked else 0,
+                "locked": default_locked
+            })
+
+
+
+
+    def save_progress(self):
+        username = self.current_user
+        if username and username in self.users_data["users"]:
+            self.users_data["users"][username]["progress"] = self.module_progress
+            with open("data/users.json", "w", encoding="utf-8") as f:
+                json.dump(self.users_data, f, ensure_ascii=False, indent=4)
+        else:
+            print("[Ошибка сохранения прогресса]: текущий пользователь не найден")  
 
     def show_module(self, module_key):
         self.current_module = module_key
@@ -539,11 +577,9 @@ class FinanceApp(MDApp):
         dialog.open()
 
     def load_users(self):
-        if os.path.exists(self.users_file):
-            with open(self.users_file, "r", encoding="utf-8") as f:
-                self.users_data = json.load(f)
-        else:
-            self.users_data = {"users": {}, "current_user": None}
+        with open("data/users.json", "r", encoding="utf-8") as f:
+            self.users_data = json.load(f)
+
 
     def save_users(self):
         with open(self.users_file, "w", encoding="utf-8") as f:
@@ -581,27 +617,76 @@ class FinanceApp(MDApp):
             "middle_name": middle,
             "age": int(age)
         })
+        
         self.change_screen("register_step3")
 
-    def register_finish(self, school, grade):
-        if not school or not grade:
-            self.show_error("Введите школу и класс")
+    def register_step3(self, last_name, first_name, middle_name, age, school, grade):
+        username = self.new_user_data.get("username")
+        password = self.new_user_data.get("password")
+
+        if not all([username, password, last_name, first_name, middle_name, age, school, grade]):
+            self.show_dialog("Ошибка", "Пожалуйста, заполните все поля.")
             return
 
-        self.temp_user_data.update({
+        # Преобразуем возраст в число
+        try:
+            age = int(age)
+        except ValueError:
+            self.show_dialog("Ошибка", "Возраст должен быть числом.")
+            return
+
+        # Проверка уникальности
+        if username in self.users_data["users"]:
+            self.show_dialog("Ошибка", "Пользователь с таким логином уже существует.")
+            return
+
+        # Стартовый прогресс по модулям
+        default_progress = {
+            "Планирование": {"progress": 10, "locked": False},
+            "Депозиты": {"progress": 0, "locked": True},
+            "Кредиты": {"progress": 0, "locked": True},
+            "Операции": {"progress": 0, "locked": True},
+            "Страхование": {"progress": 0, "locked": True},
+            "Инвестиции": {"progress": 0, "locked": True},
+            "Пенсии": {"progress": 0, "locked": True},
+            "Налоги": {"progress": 0, "locked": True},
+            "Мошенничество": {"progress": 0, "locked": True}
+        }
+
+        # Задания
+        default_tasks = [
+            {"id": "daily_login", "title": "Зайти в приложение", "type": "daily", "completed": False, "reward": 10},
+            {"id": "daily_game", "title": "Поиграть в игру", "type": "daily", "completed": False, "reward": 20},
+        ] + [
+            {"id": f"module_{i}_complete", "title": f"Пройти модуль {i}", "type": "one-time", "completed": False, "reward": 50}
+            for i in range(1, 10)
+        ]
+
+        # Добавляем нового пользователя
+        self.users_data["users"][username] = {
+            "password": password,
+            "last_name": last_name,
+            "first_name": first_name,
+            "middle_name": middle_name,
+            "age": age,
             "school": school,
             "grade": grade,
             "currency": 0,
-        })
+            "progress": default_progress,
+            "tasks": default_tasks
+        }
 
-        username = self.temp_user_data["username"]
-        user_data = self.temp_user_data.copy()
-        del user_data["username"]
-
-        self.users_data["users"][username] = user_data
+        # Устанавливаем текущего пользователя
         self.users_data["current_user"] = username
-        self.save_users()
+        self.save_users_data()
+
+        self.load_profile(username)
+        self.load_progress()
+        self.load_tasks()
+
+        self.show_dialog("Успех", f"Добро пожаловать, {first_name}!")
         self.change_screen("main")
+
 
     def show_profile_tab(self):
         user = self.users_data["users"].get(self.users_data["current_user"])
@@ -758,7 +843,15 @@ class FinanceApp(MDApp):
 
         except Exception as e:
             print("[SMTP ошибка]:", e)
-            self.show_dialog("Ошибка", "Не удалось отправить отчёт на email.")    
+            self.show_dialog("Ошибка", "Не удалось отправить отчёт на email.")   
+            
+    def toggle_theme(self):
+        self.theme_cls.theme_style = "Dark" if self.theme_cls.theme_style == "Light" else "Light"
+
+    def toggle_language(self):
+        # Заглушка — позже добавим локализацию
+        self.show_dialog("Инфо", "Пока доступен только русский язык. Поддержка английского — скоро!")
+ 
 
     
     def start_game(self, game_id):
@@ -820,10 +913,18 @@ class FinanceApp(MDApp):
     def load_words(self):
         try:
             with open("data/words_5.txt", "r", encoding="utf-8") as f:
-                self.words = [line.strip().lower() for line in f if len(line.strip()) == 5]
+                self.words = []
+                for line in f:
+                    if "|" in line:
+                        word, hint = line.strip().split("|")
+                        if len(word) == 5:
+                            self.words.append({"word": word.lower(), "hint": hint.strip()})
+            if not self.words:
+                raise ValueError("Нет слов в списке.")
         except Exception as e:
             print("[Ошибка загрузки слов]:", e)
-            self.words = ["налог"]  # запасной вариант
+            self.words = [{"word": "налог", "hint": "Платёж государству"}]
+
             
             
     def show_confirm_restart(self, title, message):
@@ -840,10 +941,19 @@ class FinanceApp(MDApp):
         )
         self.dialog.open()
         
-    def restart_guess_game(self):
-        if self.dialog:
-            self.dialog.dismiss()
-        self.reset_guess_game()
+    def reset_guess_game(self):
+        word_entry = random.choice(self.words)
+        self.target_word = word_entry["word"]
+        self.current_hint = word_entry["hint"]
+        self.used_hint = False
+
+        self.attempts = []
+        self.max_attempts = 6
+
+        screen = self.root.get_screen("guess_word")
+        screen.ids.guess_input.text = ""
+        screen.ids.guess_output.clear_widgets()
+
         
     def end_game(self):
         if self.dialog:
@@ -853,6 +963,158 @@ class FinanceApp(MDApp):
     def add_currency(self, amount):
         self.profile["currency"] = self.profile.get("currency", 0) + amount
         self.save_profile()
+        
+    def show_hint(self):
+        if self.used_hint:
+            if self.profile["currency"] >= 10:
+                self.profile["currency"] -= 10
+                self.save_profile()
+                self.update_currency_display()
+                self.show_dialog("Подсказка", self.current_hint)
+            else:
+                self.show_dialog("Недостаточно кешиков", "Купи подсказку за 10 кешиков")
+        else:
+            self.used_hint = True
+            self.show_dialog("Подсказка", self.current_hint)
+
+    def start_game(self, game_id):
+        if game_id == "guess_word":
+            self.reset_guess_game()
+            self.root.current = "guess_word"
+        elif game_id == "budget_game":
+            self.reset_budget_game()
+            self.root.current = "budget_game"
+    
+    
+    def start_budget_game(self):
+        self.root.current = "budget_game"
+        screen = self.root.get_screen("budget_game")
+        container = screen.ids.budget_items
+        container.clear_widgets()
+        self.user_answers = {}
+
+        for item in self.budget_data:
+            row = MDBoxLayout(orientation="horizontal", spacing="12dp", size_hint_y=None, height="56dp")
+
+            label = MDLabel(text=item["text"], size_hint_x=0.6)
+            row.add_widget(label)
+
+            text_field = MDTextField(
+                hint_text="Выбери",
+                mode="rectangle",
+                readonly=True,
+                size_hint_x=0.4
+            )
+
+            menu_items = [
+                {
+                    "text": category,
+                    "on_release": lambda c=category, t=text_field, k=item["text"]: self.select_category(t, k, c)
+                } for category in ["Доход", "Расход", "Сбережения"]
+            ]
+
+            menu = MDDropdownMenu(
+                caller=text_field,
+                items=menu_items,
+                width_mult=4
+            )
+
+            text_field.on_focus = lambda instance, value: menu.open() if value else None
+            row.add_widget(text_field)
+            container.add_widget(row)
+
+    def reset_budget_game(self):
+        self.budget_categories = [
+            {"name": "Еда", "correct": True},
+            {"name": "Одежда", "correct": True},
+            {"name": "Шоколадки", "correct": False},
+            {"name": "Подарки", "correct": False},
+            {"name": "Транспорт", "correct": True},
+            {"name": "Игрушки", "correct": False},
+        ]
+        self.budget_selected = {}
+
+        screen = self.root.get_screen("budget_game")
+        container = screen.ids.budget_items
+        container.clear_widgets()
+
+        from kivymd.uix.card import MDCard
+        from kivymd.uix.selectioncontrol import MDCheckbox
+        from kivymd.uix.label import MDLabel
+        from kivymd.uix.boxlayout import MDBoxLayout
+        from kivy.metrics import dp
+
+        for item in self.budget_categories:
+            row = MDBoxLayout(orientation="horizontal", spacing=dp(8), size_hint_y=None, height=dp(48))
+
+            checkbox = MDCheckbox()
+            self.budget_selected[item["name"]] = checkbox
+
+            row.add_widget(checkbox)
+            row.add_widget(MDLabel(text=item["name"], halign="left"))
+            container.add_widget(row)
+
+        
+    def select_category(self, text_field, key, category):
+        text_field.text = category
+        self.user_answers[key] = category
+
+       
+    def save_budget_choice(self, key, value):
+        self.user_answers[key] = value
+        
+    def check_budget_game(self):
+        correct = 0
+        wrong = 0
+
+        for item in self.budget_categories:
+            selected = self.budget_selected[item["name"]].active
+            if selected and item["correct"]:
+                correct += 1
+            elif selected and not item["correct"]:
+                wrong += 1
+
+        if correct >= 3 and wrong == 0:
+            self.add_currency(20)
+            self.show_success_animation("Молодец", "+20 кешиков за правильный выбор!")
+        else:
+            self.show_dialog("Попробуй ещё раз", "Не все ответы верны. Попробуй ещё!")
+
+
+    def show_budget_hint(self):
+    # Подсказка только один раз бесплатно
+        if hasattr(self, "budget_hint_used") and self.budget_hint_used:
+            if self.profile["currency"] >= 10:
+                self.profile["currency"] -= 10
+                self.save_profile()
+                self.update_currency_display()
+                self.show_dialog("Подсказка", "Правильные категории — необходимые для жизни.")
+            else:
+                self.show_dialog("Недостаточно кешиков", "Подсказка стоит 10 кешиков.")
+        else:
+            self.budget_hint_used = True
+            self.show_dialog("Подсказка", "Правильные категории — необходимые для жизни.")
+
+    def show_success_animation(self, title="Успех", message="Молодец!"):
+        from kivymd.uix.dialog import MDDialog
+        from kivymd.uix.label import MDLabel
+        from kivy.uix.image import Image
+
+        layout = MDBoxLayout(orientation="vertical", spacing="12dp")
+        layout.add_widget(Image(source="data/img/success_star.png", size_hint_y=None, height="120dp"))
+        layout.add_widget(MDLabel(text=message, halign="center"))
+
+        dialog = MDDialog(
+            title=title,
+            type="custom",
+            content_cls=layout,
+            buttons=[
+                MDRaisedButton(text="OK", on_release=lambda x: dialog.dismiss())
+            ],
+        )
+        dialog.open()
+
+
 
     
 if __name__ == "__main__":

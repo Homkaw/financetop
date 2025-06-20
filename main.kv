@@ -33,9 +33,15 @@ ScreenManager:
 
     ReportScreen:
         name: "report"
+
+    SettingsScreen:
+        name: "settings"
     
     GuessWordScreen:
         name: "guess_word"
+
+    BudgetGameScreen:
+        name: "budget_game"
 
 <MainScreen@MDScreen>:
     MDBottomNavigation:
@@ -108,19 +114,21 @@ ScreenManager:
                             halign: "center"
                             font_style: "Caption"
 
+                    # 🟦 Игра 2: Финансовые категории
                     MDCard:
                         orientation: "vertical"
-                        size_hint: 0.45, None  # ✅ адаптивная ширина
+                        size_hint: 0.45, None
                         height: "180dp"
                         radius: [12]
+                        on_release: app.start_game("budget_game")  # Вызов второй игры
                         elevation: 6
 
                         FitImage:
-                            source: "data/img/guess_word_banner.png"
+                            source: "data/img/budget_game_banner.png"  # Заглушка или своя картинка
                             size_hint_y: 0.7
 
                         MDLabel:
-                            text: "Угадай слово"
+                            text: "Финансовые категории"
                             halign: "center"
                             font_style: "Caption"
 
@@ -209,6 +217,11 @@ ScreenManager:
                         on_release: app.root.current = "report"
 
                     MDRaisedButton:
+                        text: "Настройки"
+                        pos_hint: {"center_x": 0.5}
+                        on_release: app.root.current = "settings"
+
+                    MDRaisedButton:
                         text: "Выйти из аккаунта"
                         pos_hint: {"center_x": 0.5}
                         on_release: app.logout()
@@ -233,6 +246,10 @@ ScreenManager:
             font_style: "H5"
             halign: "center"
             theme_text_color: "Primary"
+            size_hint_y: None
+            adaptive_height: True
+            text_size: self.width, None
+            font_size: "20sp"
 
         MDLabel:
             id: module_desc
@@ -240,13 +257,20 @@ ScreenManager:
             font_style: "Body1"
             halign: "center"
             theme_text_color: "Secondary"
+            size_hint_y: None
+            adaptive_height: True
+            text_size: self.width, None
+            font_size: "16sp"
 
         Widget:
 
         MDRaisedButton:
             text: "Начать урок"
+            size_hint: None, None
+            size: "200dp", "48dp"
             pos_hint: {"center_x": 0.5}
             on_release: app.start_lesson()
+
 
 <LessonScreen@MDScreen>:
     MDBoxLayout:
@@ -262,25 +286,28 @@ ScreenManager:
 
         ScrollView:
             MDBoxLayout:
-                id: lesson_content
                 orientation: "vertical"
-                adaptive_height: True
+                id: lesson_content
                 padding: "12dp"
                 spacing: "12dp"
+                adaptive_height: True
+                size_hint_y: None
 
-        MDLabel:
-            id: lesson_title
-            text: ""
-            font_style: "H5"
-            halign: "center"
-            theme_text_color: "Primary"
-            size_hint_y: None
-            height: "32dp"
+                MDLabel:
+                    id: lesson_title
+                    text: ""
+                    font_style: "H6"
+                    halign: "center"
+                    theme_text_color: "Primary"
+                    size_hint_y: None
+                    height: self.texture_size[1] + dp(12)
+                    text_size: self.width - dp(24), None  # чтобы текст переносился
 
         MDBoxLayout:
             size_hint_y: None
             height: "48dp"
             spacing: "12dp"
+            padding: "12dp"
             pos_hint: {"center_x": 0.5}
 
             MDRaisedButton:
@@ -290,6 +317,7 @@ ScreenManager:
             MDRaisedButton:
                 text: "Назад"
                 on_release: app.go_back_module()
+
 
 <TestScreen@MDScreen>:
     MDBoxLayout:
@@ -308,19 +336,24 @@ ScreenManager:
                 id: test_container
                 orientation: "vertical"
                 adaptive_height: True
-                padding: [16, 30, 16, 16]  # <<< ВНИМАНИЕ: здесь 30dp сверху
+                padding: [16, 30, 16, 16]
                 spacing: "16dp"
 
         MDRaisedButton:
             text: "Проверить"
+            size_hint: None, None
+            size: "200dp", "48dp"
             pos_hint: {"center_x": 0.5}
             on_release: app.check_test()
+
 
 <TasksScreen@MDScreen>:
     name: "tasks_screen"
 
     MDBoxLayout:
         orientation: "vertical"
+        padding: "12dp"
+        spacing: "12dp"
 
         MDTopAppBar:
             title: "Задания и валюта"
@@ -334,7 +367,9 @@ ScreenManager:
             halign: "center"
             font_style: "H6"
             size_hint_y: None
-            height: "48dp"
+            adaptive_height: True
+            text_size: self.width, None
+            font_size: "18sp"
 
         ScrollView:
             MDBoxLayout:
@@ -344,6 +379,7 @@ ScreenManager:
                 spacing: "12dp"
                 adaptive_height: True
                 size_hint_y: None
+
 
 
 <LoginScreen@MDScreen>:
@@ -471,7 +507,7 @@ ScreenManager:
         MDRaisedButton:
             text: "Завершить"
             pos_hint: {"center_x": 0.5}
-            on_release: app.register_finish(reg_school.text, reg_grade.text)
+            on_release: app.register_step3(reg_school.text, reg_grade.text)
 
         MDFlatButton:
             text: "Назад"
@@ -551,6 +587,42 @@ ScreenManager:
                 pos_hint: {"center_x": 0.1}
                 on_release: app.generate_report()
 
+<SettingsScreen@MDScreen>:
+    name: "settings"
+
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: "24dp"
+        padding: "16dp"
+
+        MDTopAppBar:
+            title: "Настройки"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+
+        Widget:  # Проталкивает кнопки вниз
+
+        MDBoxLayout:
+            orientation: "vertical"
+            spacing: "16dp"
+            size_hint_y: None
+            height: self.minimum_height
+            pos_hint: {"center_x": 0.5}
+
+            MDRaisedButton:
+                text: "Переключить тему"
+                pos_hint: {"center_x": 0.5}
+                on_release: app.toggle_theme()
+
+
+            MDRaisedButton:
+                text: "Сменить язык"
+                on_release: app.toggle_language()
+                pos_hint: {"center_x": 0.5}
+
+        Widget:  # Центрирует вертикально
+
+
+
 
 <GuessWordScreen@MDScreen>:
     name: "guess_word"
@@ -563,11 +635,22 @@ ScreenManager:
             title: "Угадай слово"
             left_action_items: [["arrow-left", lambda x: app.go_back()]]
 
+        MDIconButton:
+            icon: "lightbulb-on-outline"
+            icon_size: "32sp"
+            theme_text_color: "Custom"
+            text_color: 1, 0.8, 0, 1
+            on_release: app.show_hint()
+            tooltip_text: "Показать подсказку"
+
         MDLabel:
             id: guess_hint
             text: "Введите слово из 5 букв"
             halign: "center"
             font_style: "H6"
+
+        
+
 
         MDTextField:
             id: guess_input
@@ -590,3 +673,42 @@ ScreenManager:
             text: "Проверить"
             pos_hint: {"center_x": 0.5}
             on_release: app.submit_guess()
+
+        
+
+<BudgetGameScreen@MDScreen>:
+    name: "budget_game"
+
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "16dp"
+        spacing: "12dp"
+
+        MDTopAppBar:
+            title: "Игра: Бюджет"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+
+        ScrollView:
+            MDBoxLayout:
+                id: budget_items
+                orientation: "vertical"
+                spacing: "12dp"
+                adaptive_height: True
+                size_hint_y: None
+                padding: "12dp"
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "60dp"
+            spacing: "12dp"
+            padding: "12dp"
+            pos_hint: {"center_x": 0.5}
+
+            MDRaisedButton:
+                text: "Проверить"
+                on_release: app.check_budget_game()
+
+            MDRaisedButton:
+                text: "💡"
+                on_release: app.show_budget_hint()
+
