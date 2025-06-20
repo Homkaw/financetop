@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANDROID_SDK_ROOT: /home/runner/android-sdk
-      PATH: ${{ env.PATH }}:/home/runner/android-sdk/platform-tools:/home/runner/android-sdk/cmdline-tools/latest/bin:/home/runner/android-sdk/build-tools/33.0.2
+      PATH: /home/runner/android-sdk/platform-tools:/home/runner/android-sdk/cmdline-tools/latest/bin:/home/runner/android-sdk/build-tools/33.0.2:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 
     steps:
     - name: 🔽 Клонирование репозитория
