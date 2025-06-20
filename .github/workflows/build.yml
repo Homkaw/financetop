@@ -12,7 +12,6 @@ jobs:
       ANDROID_SDK_ROOT: /home/runner/android-sdk
       PATH: /home/runner/android-sdk/platform-tools:/home/runner/android-sdk/cmdline-tools/latest/bin:/home/runner/android-sdk/build-tools/33.0.2:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-
     steps:
     - name: 🔽 Клонирование репозитория
       uses: actions/checkout@v3
@@ -32,19 +31,19 @@ jobs:
     - name: Проверка cython
       run: cython --version
 
-    - name: ⚙️ Установка зависимостей system (Ubuntu)
+    - name: ⚙️ Установка системных зависимостей (Ubuntu)
       run: |
         sudo apt update
-        sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev libgles2-mesa-dev libffi-dev libssl-dev ant wget unzip
+        sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev libgles2-mesa-dev libffi-dev libssl-dev ant wget
 
     - name: ⚙️ Установка Android SDK и Build-Tools
       run: |
-        sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
         cd $ANDROID_SDK_ROOT/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
         unzip -q commandlinetools-linux-9477386_latest.zip -d latest
-        yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
-        sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: 📥 Клонирование python-for-android
       run: |
