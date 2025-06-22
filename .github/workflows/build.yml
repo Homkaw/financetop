@@ -31,10 +31,12 @@ jobs:
     - name: Проверка cython
       run: cython --version
 
-    - name: ⚙️ Установка системных зависимостей (Ubuntu)
+    - name: ⚙️ Установка зависимостей system (Ubuntu)
       run: |
         sudo apt update
-        sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev libgles2-mesa-dev libffi-dev libssl-dev ant wget
+        sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev \
+          libgles2-mesa-dev libffi-dev libssl-dev ant wget unzip autoconf automake libtool
+
 
     - name: ⚙️ Установка Android SDK и Build-Tools
       run: |
