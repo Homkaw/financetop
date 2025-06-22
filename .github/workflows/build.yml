@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANDROID_SDK_ROOT: /home/runner/android-sdk
-      PATH: /home/runner/android-sdk/platform-tools:/home/runner/android-sdk/cmdline-tools/latest/bin:/home/runner/android-sdk/build-tools/33.0.2:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      PATH: ~/.local/bin:/home/runner/android-sdk/platform-tools:/home/runner/android-sdk/cmdline-tools/latest/bin:/home/runner/android-sdk/build-tools/33.0.2:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
     - name: 🔽 Клонирование репозитория
@@ -21,17 +21,15 @@ jobs:
       with:
         python-version: "3.12"
 
-    - name: ⚙️ Установка зависимостей system (Ubuntu)
+    - name: ⚙️ Установка системных зависимостей (Ubuntu)
       run: |
         sudo apt update
-        sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev \
-          libgles2-mesa-dev libffi-dev libssl-dev ant wget autoconf automake libtool libtool-bin
-
-
-
+        sudo apt install -y zip unzip openjdk-11-jdk adb pkg-config libgl1-mesa-dev \
+          libgles2-mesa-dev libffi-dev libssl-dev ant wget autoconf automake libtool libtool-bin build-essential m4
 
     - name: 🛠️ Установка Python-зависимостей
       run: |
+        export M4=m4
         python -m ensurepip --upgrade
         python -m pip install --upgrade pip setuptools wheel
         pip install cython buildozer "python-for-android[full]"
@@ -62,7 +60,7 @@ jobs:
       run: |
         export M4=m4
         buildozer android clean
-        buildozer android debug
+        buildozer android debug --verbose
 
     - name: 📦 Загрузка APK как артефакт
       uses: actions/upload-artifact@v4
