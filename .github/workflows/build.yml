@@ -21,11 +21,12 @@ jobs:
       with:
         python-version: "3.12"
 
-    - name: ⚙️ Установка системных зависимостей Ubuntu
+    - name: ⚙️ Установка зависимостей system (Ubuntu)
       run: |
         sudo apt update
         sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev \
-          libgles2-mesa-dev libffi-dev libssl-dev ant wget autoconf automake libtool
+          libgles2-mesa-dev libffi-dev libssl-dev ant wget autoconf automake libtool libtool-bin
+
 
     - name: 🛠️ Установка Python-зависимостей
       run: |
@@ -57,6 +58,7 @@ jobs:
 
     - name: 🧼 Очистка и сборка APK
       run: |
+        export M4=m4
         buildozer android clean
         buildozer android debug
 
