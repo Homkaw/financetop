@@ -16,27 +16,22 @@ jobs:
     - name: 🔽 Клонирование репозитория
       uses: actions/checkout@v3
 
-    - name: 🐍 Установка Python и pip
+    - name: 🐍 Установка Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.12"
 
-    - name: 🛠️ Установка зависимостей Python
-      run: |
-        python -m ensurepip --upgrade
-        python -m pip install --upgrade pip setuptools wheel
-        pip install cython buildozer
-        pip install "python-for-android[full]"
-
-    - name: Проверка cython
-      run: cython --version
-
-    - name: ⚙️ Установка зависимостей system (Ubuntu)
+    - name: ⚙️ Установка системных зависимостей Ubuntu
       run: |
         sudo apt update
         sudo apt install -y zip unzip openjdk-17-jdk adb pkg-config libgl1-mesa-dev \
-          libgles2-mesa-dev libffi-dev libssl-dev ant wget unzip autoconf automake libtool
+          libgles2-mesa-dev libffi-dev libssl-dev ant wget autoconf automake libtool
 
+    - name: 🛠️ Установка Python-зависимостей
+      run: |
+        python -m ensurepip --upgrade
+        python -m pip install --upgrade pip setuptools wheel
+        pip install cython buildozer "python-for-android[full]"
 
     - name: ⚙️ Установка Android SDK и Build-Tools
       run: |
@@ -45,30 +40,27 @@ jobs:
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
         unzip -q commandlinetools-linux-9477386_latest.zip -d latest
 
-        # 🛠️ Исправляем структуру каталогов
+        # Исправление структуры
         mv latest/cmdline-tools/* latest/
         rm -r latest/cmdline-tools
 
-        # 🔗 Симлинк для совместимости с Buildozer (он ищет sdkmanager по tools/bin)
+        # Симлинк для buildozer
         ln -s $ANDROID_SDK_ROOT/cmdline-tools/latest $ANDROID_SDK_ROOT/tools
 
         yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
         $ANDROID_SDK_ROOT/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-
-
-
 
     - name: 📥 Клонирование python-for-android
       run: |
         mkdir -p .buildozer/android/platform
         git clone https://github.com/kivy/python-for-android.git .buildozer/android/platform/python-for-android
 
-    - name: 📦 Сборка APK
+    - name: 🧼 Очистка и сборка APK
       run: |
         buildozer android clean
         buildozer android debug
 
-    - name: 🗃️ Копирование APK в артефакты
+    - name: 📦 Загрузка APK как артефакт
       uses: actions/upload-artifact@v4
       with:
         name: Financetop-APK
