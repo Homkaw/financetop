@@ -21,21 +21,41 @@ jobs:
       with:
         python-version: "3.12"
 
+    - name: 📦 Кэширование Python-зависимостей
+      uses: actions/cache@v3
+      id: cache-python
+      with:
+        path: ~/.cache/pip
+        key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+
     - name: ⚙️ Установка системных зависимостей (Ubuntu)
       run: |
+        set -e
         sudo apt update
         sudo apt install -y zip unzip openjdk-11-jdk adb pkg-config libgl1-mesa-dev \
           libgles2-mesa-dev libffi-dev libssl-dev ant wget autoconf automake libtool libtool-bin build-essential m4
 
     - name: 🛠️ Установка Python-зависимостей
       run: |
+        set -e
         export M4=m4
         python -m ensurepip --upgrade
         python -m pip install --upgrade pip setuptools wheel
         pip install cython buildozer "python-for-android[full]"
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
+        fi
+
+    - name: 📦 Кэширование Android SDK
+      uses: actions/cache@v3
+      id: cache-android-sdk
+      with:
+        path: ${{ env.ANDROID_SDK_ROOT }}
+        key: android-sdk-${{ runner.os }}-${{ hashFiles('buildozer.spec') }} # Ключ основан на buildozer.spec, т.к. в нем настройки сборки
 
     - name: ⚙️ Установка Android SDK и Build-Tools
       run: |
+        set -e
         mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
         cd $ANDROID_SDK_ROOT/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
@@ -53,11 +73,13 @@ jobs:
 
     - name: 📥 Клонирование python-for-android
       run: |
+        set -e
         mkdir -p .buildozer/android/platform
         git clone https://github.com/kivy/python-for-android.git .buildozer/android/platform/python-for-android
 
     - name: 🧼 Очистка и сборка APK
       run: |
+        set -e
         export M4=m4
         buildozer android clean
         buildozer android debug --verbose
