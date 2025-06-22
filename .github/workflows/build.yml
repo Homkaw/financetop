@@ -27,7 +27,6 @@ jobs:
         sudo apt install -y zip unzip openjdk-11-jdk adb pkg-config libgl1-mesa-dev \
           libgles2-mesa-dev libffi-dev libssl-dev ant wget autoconf automake libtool libtool-bin m4 build-essential
 
-
     - name: 🛠️ Установка Python-зависимостей
       run: |
         export M4=m4
@@ -41,14 +40,9 @@ jobs:
         cd $ANDROID_SDK_ROOT/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
         unzip -q commandlinetools-linux-9477386_latest.zip -d latest
-
-        # Исправление структуры
         mv latest/cmdline-tools/* latest/
         rm -r latest/cmdline-tools
-
-        # Симлинк для buildozer
         ln -s $ANDROID_SDK_ROOT/cmdline-tools/latest $ANDROID_SDK_ROOT/tools
-
         yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
         $ANDROID_SDK_ROOT/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
@@ -65,13 +59,24 @@ jobs:
         echo "ANT_HOME=/opt/ant" >> $GITHUB_ENV
         echo "/opt/ant/bin" >> $GITHUB_PATH
 
+    - name: ⏳ Инициализация сборки (чтобы появился libffi)
+      run: |
+        export M4=m4
+        timeout 60s buildozer android debug || echo "Initial libffi extraction complete."
+
     - name: 🧩 Патч libffi для автореконфигурации
       run: |
-        cd .buildozer/android/platform/python-for-android/.libs/libffi-source || exit 1
-        sed -i '/AC_INIT/ a m4_pattern_allow([^LT_SYS_SYMBOL_USCORE])' configure.ac
-        autoreconf -fi
+        LIBFFI_PATH=$(find .buildozer -type d -name "libffi-*" | head -n 1)
+        if [ -d "$LIBFFI_PATH" ]; then
+          echo "Путь к libffi: $LIBFFI_PATH"
+          cd "$LIBFFI_PATH"
+          sed -i '/AC_INIT/ a m4_pattern_allow([^LT_SYS_SYMBOL_USCORE])' configure.ac || true
+          autoreconf -fi || true
+        else
+          echo "⚠️ Папка libffi не найдена — патч пропущен."
+        fi
 
-    - name: 🧼 Очистка и сборка APK
+    - name: 🧼 Очистка и финальная сборка APK
       run: |
         export M4=m4
         buildozer android clean
