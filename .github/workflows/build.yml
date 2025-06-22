@@ -57,6 +57,15 @@ jobs:
         mkdir -p .buildozer/android/platform
         git clone https://github.com/kivy/python-for-android.git .buildozer/android/platform/python-for-android
 
+    - name: 📦 Установка Apache Ant
+      run: |
+        wget https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.tar.gz
+        tar -xzf apache-ant-1.9.4-bin.tar.gz
+        sudo mv apache-ant-1.9.4 /opt/ant
+        echo "ANT_HOME=/opt/ant" >> $GITHUB_ENV
+        echo "/opt/ant/bin" >> $GITHUB_PATH
+
+    
     - name: 🧼 Очистка и сборка APK
       run: |
         export M4=m4
