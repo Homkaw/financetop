@@ -65,7 +65,12 @@ jobs:
         echo "ANT_HOME=/opt/ant" >> $GITHUB_ENV
         echo "/opt/ant/bin" >> $GITHUB_PATH
 
-    
+    - name: 🧩 Патч libffi для автореконфигурации
+      run: |
+        cd .buildozer/android/platform/python-for-android/.libs/libffi-source || exit 1
+        sed -i '/AC_INIT/ a m4_pattern_allow([^LT_SYS_SYMBOL_USCORE])' configure.ac
+        autoreconf -fi
+
     - name: 🧼 Очистка и сборка APK
       run: |
         export M4=m4
