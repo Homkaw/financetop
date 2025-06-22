@@ -99,17 +99,73 @@ class FinanceApp(MDApp):
 
 
     def on_start(self):
+        from kivy.clock import Clock
+        self.session_flags = {
+            "game_played_today": False
+        }
+
         current_user = self.users_data.get("current_user")
         
         if current_user and current_user in self.users_data["users"]:
-            self.current_user = current_user  # ⬅️ Обязательно установить
-            self.load_progress()  # ⬅️ Загрузить прогресс ДО отображения модулей
+            self.current_user = current_user
+            self.load_progress()
             self.change_screen("main")
+
+            # 👇 Откладываем инициализацию на следующий кадр
+            Clock.schedule_once(self.initialize_main_screen, 0.1)
         else:
             self.change_screen("login")
-            return  # Не пытаться дальше загружать, если не авторизован
 
-        # Загрузка прочих данных
+
+    def reset_daily_tasks_if_needed(self):
+        try:
+            today = datetime.date.today().isoformat()
+
+            # Загружаем последнюю дату из users.json
+            last_date = self.users_data.get("last_daily_check")
+            if last_date != today:
+                # Обновляем дату
+                self.users_data["last_daily_check"] = today
+
+                # Сброс статуса выполнения только для ежедневных заданий
+                for task in self.tasks:
+                    if task.get("type") == "daily":
+                        task["completed"] = False
+
+                self.save_tasks()
+                self.save_users_data()
+
+                # Обнуляем игровой флаг
+                self.session_flags["game_played_today"] = False
+
+                print("[Ежедневные задания обновлены]")
+            else:
+                print("[Ежедневные задания уже проверены сегодня]")
+        except Exception as e:
+            print(f"[Ошибка при сбросе ежедневных заданий]: {e}")
+
+
+           
+    def load_progress(self):
+        username = self.current_user
+        if not username:
+            print("[Ошибка]: текущий пользователь не задан")
+            self.module_progress = {}
+            return
+
+        user = self.users_data["users"].get(username, {})
+        saved_progress = user.get("progress", {})
+
+        self.module_progress = {}
+        for index, module in enumerate(self.modules):  # self.modules — список модулей
+            key = module["key"]
+            default_locked = index != 0
+            self.module_progress[key] = saved_progress.get(key, {
+                "progress": 0 if not default_locked else 0,
+                "locked": default_locked
+            })
+
+    def initialize_main_screen(self, *args):
         self.load_tasks()
         self.reset_daily_tasks_if_needed()
         self.populate_tasks_screen()
@@ -117,13 +173,11 @@ class FinanceApp(MDApp):
         self.update_currency_in_appbar()
         self.load_words()
 
-        # Подготовка карточек модулей
         container = self.root.get_screen("main").ids.modules_container
         container.clear_widgets()
 
         for module in self.modules:
             key = module["key"]
-            # Защита от KeyError:
             if key not in self.module_progress:
                 print(f"[Внимание] Прогресс по модулю '{key}' не найден.")
                 continue
@@ -164,26 +218,6 @@ class FinanceApp(MDApp):
             box.add_widget(icon)
             card.add_widget(box)
             container.add_widget(card)
-
-           
-    def load_progress(self):
-        username = self.current_user
-        if not username:
-            print("[Ошибка]: текущий пользователь не задан")
-            self.module_progress = {}
-            return
-
-        user = self.users_data["users"].get(username, {})
-        saved_progress = user.get("progress", {})
-
-        self.module_progress = {}
-        for index, module in enumerate(self.modules):  # self.modules — список модулей
-            key = module["key"]
-            default_locked = index != 0
-            self.module_progress[key] = saved_progress.get(key, {
-                "progress": 0 if not default_locked else 0,
-                "locked": default_locked
-            })
 
 
 
@@ -417,13 +451,6 @@ class FinanceApp(MDApp):
         self.root.current = "main"
         self.update_currency_in_appbar()
         
-        
-    def load_tasks(self):
-        try:
-            with open("data/tasks.json", "r", encoding="utf-8") as f:
-                self.tasks = json.load(f)
-        except FileNotFoundError:
-            self.tasks = []
             
     def load_profile(self):
         try:
@@ -444,14 +471,49 @@ class FinanceApp(MDApp):
             self.save_tasks()
             self.save_profile()
             
+    def load_tasks(self):
+        """Загружает задания текущего пользователя из users.json"""
+        try:
+            username = self.current_user
+            self.tasks = self.users_data["users"][username].get("tasks", [])
+        except Exception as e:
+            print(f"[Ошибка загрузки заданий]: {e}")
+            self.tasks = []
+
     def save_tasks(self):
-        with open("data/tasks.json", "w", encoding="utf-8") as f:
-            json.dump(self.tasks, f, ensure_ascii=False, indent=4)
+        """Сохраняет задания текущего пользователя в users.json"""
+        try:
+            username = self.current_user
+            self.users_data["users"][username]["tasks"] = self.tasks
+            self.save_users_data()  # обязательно сохраняем users_data.json
+        except Exception as e:
+            print(f"[Ошибка сохранения заданий]: {e}")
+
 
     def save_profile(self):
         with open("data/profile.json", "w", encoding="utf-8") as f:
             json.dump(self.profile, f, ensure_ascii=False, indent=4)
-            
+        
+        
+    def update_currency_in_appbar(self):
+        """Обновляет текст валюты во всех TopAppBar, кроме профиля"""
+        try:
+            currency = self.profile.get("currency", 0)
+
+            for screen_name in ["main", "module_screen", "lesson_screen", "test_screen", "tasks_screen"]:
+                try:
+                    screen = self.root.get_screen(screen_name)
+                    topbar = screen.ids.get("topbar")
+                    if topbar:
+                        topbar.right_action_items = [["cash", lambda x: None, f"Кешики: {currency}"]]
+                    else:
+                        print(f"[!] Не найден topbar на экране '{screen_name}'")
+                except Exception as e:
+                    print(f"[Ошибка обновления валюты на экране '{screen_name}']: {e}")
+
+        except Exception as e:
+            print(f"[Ошибка отображения валюты]: {e}")
+    
         
             
     def populate_tasks_tab(self):
@@ -505,9 +567,22 @@ class FinanceApp(MDApp):
             print(f"[Ошибка обновления кешиков]: {e}")
         
     def add_currency(self, amount):
-        self.profile["currency"] += amount
-        self.save_users()
+        if not self.current_user:
+            print("[Ошибка]: Пользователь не авторизован")
+            return
+
+        # Обновляем значение
+        self.profile["currency"] = self.profile.get("currency", 0) + amount
+
+        # Обновляем в users_data
+        self.users_data["users"][self.current_user]["currency"] = self.profile["currency"]
+
+        # Сохраняем в файл
+        self.save_users_data()
+
+        # Обновляем отображение
         self.update_currency_in_appbar()
+
     
     def update_currency_display(self):
         try:
@@ -535,15 +610,21 @@ class FinanceApp(MDApp):
                             self.handle_app_error("Сначала пройдите модуль!")
                             return
 
-                    if task["id"] == "daily_game":
-                        self.handle_app_error("Игры пока нет в приложении!")
-                        return
+                    # Проверка задания на игру
+                    if task_id == "daily_game":
+                        if not self.session_flags.get("game_played_today", False):
+                            self.handle_app_error("Сначала поиграйте в игру!")
+                            return
 
+                    # Выполняем задание
                     task["completed"] = True
                     self.profile["currency"] += task["reward"]
                     self.save_tasks()
-                    self.save_profile()
+                    self.users_data["users"][self.current_user]["currency"] = self.profile["currency"]
+                    self.save_users_data()
                     self.update_currency_display()
+                    self.show_dialog("Успех", f"Задание выполнено! +{task['reward']} кешиков")
+
                     break
 
             if self.root.current == "main":
@@ -553,6 +634,7 @@ class FinanceApp(MDApp):
 
         except Exception as e:
             self.handle_app_error(f"Ошибка при выполнении задания: {e}")
+
 
     def handle_app_error(self, message):
         from kivymd.uix.dialog import MDDialog
@@ -620,24 +702,18 @@ class FinanceApp(MDApp):
         
         self.change_screen("register_step3")
 
-    def register_step3(self, last_name, first_name, middle_name, age, school, grade):
-        username = self.new_user_data.get("username")
-        password = self.new_user_data.get("password")
+    def register_step3(self, school, grade):
+        # Забираем данные, которые мы временно хранили
+        user_data = self.temp_user_data
+        username = user_data["username"]
+        password = user_data["password"]
+        last_name = user_data["last_name"]
+        first_name = user_data["first_name"]
+        middle_name = user_data["middle_name"]
+        age = user_data["age"]
 
-        if not all([username, password, last_name, first_name, middle_name, age, school, grade]):
-            self.show_dialog("Ошибка", "Пожалуйста, заполните все поля.")
-            return
-
-        # Преобразуем возраст в число
-        try:
-            age = int(age)
-        except ValueError:
-            self.show_dialog("Ошибка", "Возраст должен быть числом.")
-            return
-
-        # Проверка уникальности
-        if username in self.users_data["users"]:
-            self.show_dialog("Ошибка", "Пользователь с таким логином уже существует.")
+        if not all([school, grade]):
+            self.show_dialog("Ошибка", "Пожалуйста, заполните школу и класс.")
             return
 
         # Стартовый прогресс по модулям
@@ -653,7 +729,7 @@ class FinanceApp(MDApp):
             "Мошенничество": {"progress": 0, "locked": True}
         }
 
-        # Задания
+        # Стартовые задания
         default_tasks = [
             {"id": "daily_login", "title": "Зайти в приложение", "type": "daily", "completed": False, "reward": 10},
             {"id": "daily_game", "title": "Поиграть в игру", "type": "daily", "completed": False, "reward": 20},
@@ -662,7 +738,7 @@ class FinanceApp(MDApp):
             for i in range(1, 10)
         ]
 
-        # Добавляем нового пользователя
+        # Добавляем пользователя
         self.users_data["users"][username] = {
             "password": password,
             "last_name": last_name,
@@ -676,16 +752,23 @@ class FinanceApp(MDApp):
             "tasks": default_tasks
         }
 
-        # Устанавливаем текущего пользователя
         self.users_data["current_user"] = username
         self.save_users_data()
 
+        # Загружаем профиль и другие данные
         self.load_profile(username)
         self.load_progress()
         self.load_tasks()
 
         self.show_dialog("Успех", f"Добро пожаловать, {first_name}!")
         self.change_screen("main")
+
+    def save_users_data(self):
+        try:
+            with open("data/users.json", "w", encoding="utf-8") as f:
+                json.dump(self.users_data, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print("[Ошибка сохранения users.json]:", e)
 
 
     def show_profile_tab(self):
@@ -750,7 +833,7 @@ class FinanceApp(MDApp):
 
     def generate_report(self):
         try:
-            with open("users.json", "r", encoding="utf-8") as f:
+            with open("data/users.json", "r", encoding="utf-8") as f:
                 users_data = json.load(f)
 
             current_user = users_data.get("current_user")
@@ -760,13 +843,6 @@ class FinanceApp(MDApp):
                 self.show_dialog("Ошибка", "Пользователь не найден.")
                 return
 
-            # Загружаем прогресс
-            progress_data = {}
-            progress_path = f"data/progress.json"
-            if os.path.exists(progress_path):
-                with open(progress_path, "r", encoding="utf-8") as pf:
-                    progress_data = json.load(pf)
-
             report = f"""[ОТЧЁТ ПО ПОЛЬЗОВАТЕЛЮ]
 
     👤 ФИО: {user_info.get('last_name', '')} {user_info.get('first_name', '')} {user_info.get('middle_name', '')}
@@ -775,12 +851,14 @@ class FinanceApp(MDApp):
     📚 Класс: {user_info.get('grade', '—')}
     💰 Кешики: {user_info.get('currency', 0)}
 
-    📈 Прогресс:
+    📈 Прогресс по модулям:
     """
-            for module, progress in progress_data.items():
-                report += f" - {module}: {progress.get('progress', 0)}%\n"
 
-            # ✅ ПЕРЕДАЁМ ОБА ПАРАМЕТРА
+            progress = user_info.get("progress", {})
+            for module, data in progress.items():
+                report += f" - {module}: {data.get('progress', 0)}%\n"
+
+            # Получение email из поля
             to_email = self.root.get_screen("report").ids.email_field.text.strip()
             self.send_email_with_report(to_email, report)
 
@@ -855,9 +933,15 @@ class FinanceApp(MDApp):
 
     
     def start_game(self, game_id):
+        self.session_flags["game_played_today"] = True  # Фиксируем, что игра была запущена
+
         if game_id == "guess_word":
             self.reset_guess_game()
             self.root.current = "guess_word"
+        elif game_id == "budget_game":
+            self.reset_budget_game()
+            self.root.current = "budget_game"
+
 
     def reset_guess_game(self):
         self.target_word = random.choice(self.words)  # ❗ или выбери случайно из списка
@@ -936,7 +1020,7 @@ class FinanceApp(MDApp):
             text=message,
             buttons=[
                 MDFlatButton(text="Нет", on_release=lambda x: self.end_game()),
-                MDFlatButton(text="Да", on_release=lambda x: self.restart_guess_game()),
+                MDFlatButton(text="Да", on_release=lambda x: self.reset_guess_game()),
             ],
         )
         self.dialog.open()
@@ -976,14 +1060,6 @@ class FinanceApp(MDApp):
         else:
             self.used_hint = True
             self.show_dialog("Подсказка", self.current_hint)
-
-    def start_game(self, game_id):
-        if game_id == "guess_word":
-            self.reset_guess_game()
-            self.root.current = "guess_word"
-        elif game_id == "budget_game":
-            self.reset_budget_game()
-            self.root.current = "budget_game"
     
     
     def start_budget_game(self):

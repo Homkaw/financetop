@@ -297,7 +297,388 @@
             "school": "asda",
             "grade": "adas",
             "currency": 0
+        },
+        "фывфыв": {
+            "password": "123",
+            "last_name": "ыфвфы",
+            "first_name": "вфыв",
+            "middle_name": "фывф",
+            "age": 12,
+            "school": "фыв",
+            "grade": "цф",
+            "currency": 0,
+            "progress": {
+                "Планирование": {
+                    "progress": 10,
+                    "locked": false
+                },
+                "Депозиты": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Кредиты": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Операции": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Страхование": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Инвестиции": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Пенсии": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Налоги": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Мошенничество": {
+                    "progress": 0,
+                    "locked": true
+                }
+            },
+            "tasks": [
+                {
+                    "id": "daily_login",
+                    "title": "Зайти в приложение",
+                    "type": "daily",
+                    "completed": false,
+                    "reward": 10
+                },
+                {
+                    "id": "daily_game",
+                    "title": "Поиграть в игру",
+                    "type": "daily",
+                    "completed": false,
+                    "reward": 20
+                },
+                {
+                    "id": "module_1_complete",
+                    "title": "Пройти модуль 1",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_2_complete",
+                    "title": "Пройти модуль 2",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_3_complete",
+                    "title": "Пройти модуль 3",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_4_complete",
+                    "title": "Пройти модуль 4",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_5_complete",
+                    "title": "Пройти модуль 5",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_6_complete",
+                    "title": "Пройти модуль 6",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_7_complete",
+                    "title": "Пройти модуль 7",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_8_complete",
+                    "title": "Пройти модуль 8",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_9_complete",
+                    "title": "Пройти модуль 9",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                }
+            ]
+        },
+        "Хомаа": {
+            "password": "123",
+            "last_name": "Стиценко",
+            "first_name": "Хома",
+            "middle_name": "Игоревна",
+            "age": 12,
+            "school": "71",
+            "grade": "7ь",
+            "currency": 10,
+            "progress": {
+                "Планирование": {
+                    "progress": 100,
+                    "locked": false
+                },
+                "Депозиты": {
+                    "progress": 100,
+                    "locked": false
+                },
+                "Кредиты": {
+                    "progress": 100,
+                    "locked": false
+                },
+                "Операции": {
+                    "progress": 100,
+                    "locked": false
+                },
+                "Страхование": {
+                    "progress": 0,
+                    "locked": false
+                },
+                "Инвестиции": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Пенсии": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Налоги": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Мошенничество": {
+                    "progress": 0,
+                    "locked": true
+                }
+            },
+            "tasks": [
+                {
+                    "id": "daily_login",
+                    "title": "Зайти в приложение",
+                    "type": "daily",
+                    "completed": false,
+                    "reward": 10
+                },
+                {
+                    "id": "daily_game",
+                    "title": "Поиграть в игру",
+                    "type": "daily",
+                    "completed": false,
+                    "reward": 20
+                },
+                {
+                    "id": "module_1_complete",
+                    "title": "Пройти модуль 1",
+                    "type": "one-time",
+                    "completed": true,
+                    "reward": 50
+                },
+                {
+                    "id": "module_2_complete",
+                    "title": "Пройти модуль 2",
+                    "type": "one-time",
+                    "completed": true,
+                    "reward": 50
+                },
+                {
+                    "id": "module_3_complete",
+                    "title": "Пройти модуль 3",
+                    "type": "one-time",
+                    "completed": true,
+                    "reward": 50
+                },
+                {
+                    "id": "module_4_complete",
+                    "title": "Пройти модуль 4",
+                    "type": "one-time",
+                    "completed": true,
+                    "reward": 50
+                },
+                {
+                    "id": "module_5_complete",
+                    "title": "Пройти модуль 5",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_6_complete",
+                    "title": "Пройти модуль 6",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_7_complete",
+                    "title": "Пройти модуль 7",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_8_complete",
+                    "title": "Пройти модуль 8",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_9_complete",
+                    "title": "Пройти модуль 9",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                }
+            ]
+        },
+        "adas": {
+            "password": "123",
+            "last_name": "asdas",
+            "first_name": "asdas",
+            "middle_name": "assdas",
+            "age": 12,
+            "school": "awd",
+            "grade": "ad",
+            "currency": 0,
+            "progress": {
+                "Планирование": {
+                    "progress": 10,
+                    "locked": false
+                },
+                "Депозиты": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Кредиты": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Операции": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Страхование": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Инвестиции": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Пенсии": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Налоги": {
+                    "progress": 0,
+                    "locked": true
+                },
+                "Мошенничество": {
+                    "progress": 0,
+                    "locked": true
+                }
+            },
+            "tasks": [
+                {
+                    "id": "daily_login",
+                    "title": "Зайти в приложение",
+                    "type": "daily",
+                    "completed": false,
+                    "reward": 10
+                },
+                {
+                    "id": "daily_game",
+                    "title": "Поиграть в игру",
+                    "type": "daily",
+                    "completed": false,
+                    "reward": 20
+                },
+                {
+                    "id": "module_1_complete",
+                    "title": "Пройти модуль 1",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_2_complete",
+                    "title": "Пройти модуль 2",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_3_complete",
+                    "title": "Пройти модуль 3",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_4_complete",
+                    "title": "Пройти модуль 4",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_5_complete",
+                    "title": "Пройти модуль 5",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_6_complete",
+                    "title": "Пройти модуль 6",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_7_complete",
+                    "title": "Пройти модуль 7",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_8_complete",
+                    "title": "Пройти модуль 8",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                },
+                {
+                    "id": "module_9_complete",
+                    "title": "Пройти модуль 9",
+                    "type": "one-time",
+                    "completed": false,
+                    "reward": 50
+                }
+            ]
         }
     },
-    "current_user": null
+    "current_user": "Хомаа"
 }

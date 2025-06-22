@@ -279,10 +279,11 @@ ScreenManager:
         spacing: "12dp"
 
         MDTopAppBar:
-            title: "Урок"
-            left_action_items: [["arrow-left", lambda x: app.go_back_module()]]
-            right_action_items: [["cash", lambda x: None, "Кешики: {}".format(app.profile.get("currency", 0))]]
             id: topbar
+            title: "Урок"
+            left_action_items: [["arrow-left", lambda x: app.go_back()]]
+            right_action_items: [["cash", lambda x: None, "Кешики: 0"]]
+
 
         ScrollView:
             MDBoxLayout:
@@ -509,6 +510,7 @@ ScreenManager:
             pos_hint: {"center_x": 0.5}
             on_release: app.register_step3(reg_school.text, reg_grade.text)
 
+
         MDFlatButton:
             text: "Назад"
             pos_hint: {"center_x": 0.5}
@@ -708,7 +710,11 @@ ScreenManager:
                 text: "Проверить"
                 on_release: app.check_budget_game()
 
-            MDRaisedButton:
-                text: "💡"
+            MDIconButton:
+                icon: "lightbulb-on-outline"
+                icon_size: "32sp"
+                theme_text_color: "Custom"
+                text_color: 1, 0.8, 0, 1
                 on_release: app.show_budget_hint()
+                tooltip_text: "Показать подсказку"
 
